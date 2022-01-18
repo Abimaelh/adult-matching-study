@@ -418,6 +418,3 @@ rand_pred_list <- rand_pred_list %>%
       separate(audio_name2,c("first_predicate","or","second_predicate"))
 
 rand_pred_list$or <- NULL
-
-getwd()
-write.csv(rand_pred_list,"rand_pred_list.csv")
