@@ -433,4 +433,7 @@ rand_pred_list <- rand_pred_list %>%
     )
   )
 
+rand_pred_list$trial_type <- "test"
+
 write.csv(rand_pred_list,"rand_pred_list_final.csv")
+
