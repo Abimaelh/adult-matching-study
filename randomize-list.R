@@ -355,7 +355,7 @@ write.csv(random_pred_vid_list,"random_pred_vid_list_r.csv")
 #adding audio and video file name columns
 rand_pred_list <- read.csv("random_pred_vid_list_r.csv")
 colnames(rand_pred_list)
-rand_pred_list <- rename(rand_pred_list, "predicate_order" = "ï..random_order" )
+rand_pred_list <- rename(rand_pred_list, "predicate_order" = "?..random_order" )
 
 rand_pred_list <- rand_pred_list %>% 
   mutate(video = 
@@ -418,3 +418,19 @@ rand_pred_list <- rand_pred_list %>%
       separate(audio_name2,c("first_predicate","or","second_predicate"))
 
 rand_pred_list$or <- NULL
+
+rand_pred_list <- read.csv("rand_pred_list.csv")
+
+rand_pred_list$X <- NULL
+
+rand_pred_list <- rand_pred_list %>%
+  mutate(
+    target = case_when(
+      (video_type == "sym" & audio_name_first_predicate_type == "sym") ~ first_predicate,
+      (video_type == "nonsym" & audio_name_first_predicate_type == "nonsym") ~ first_predicate,
+      (video_type == "sym" & audio_name_first_predicate_type == "nonsym") ~ second_predicate,
+      (video_type == "nonsym" & audio_name_first_predicate_type == "sym") ~ second_predicate
+    )
+  )
+
+write.csv(rand_pred_list,"rand_pred_list_final.csv")
