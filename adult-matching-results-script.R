@@ -62,7 +62,7 @@ num_of_files <- length(files)
 
 for (curr_file_num in 1:num_of_files) {
   dframe <- read.pcibex(file = paste("./adult_matching_verb_first_2_results/",files[curr_file_num], sep=""))  
-
+  
   # now create a column with the file name in every row
   dframe$filename <- files[curr_file_num]
   
@@ -226,10 +226,10 @@ clean_test_df <- subset(merged_df, select = c("Parameter","Value","EventTime","P
 #9987, 17
 
 clean_test_df <- clean_test_df %>% mutate(condition=recode(condition, 
-                                                  `verb_first_1`="verb_first_with_practice",
-                                                  `verb_first_2`="verb_first_no_practice",
-                                                  `video_first_1`="video_first_with_practice",
-                                                  `video_first_2`="video_first_no_practice"))
+                                                           `verb_first_1`="verb_first_with_practice",
+                                                           `verb_first_2`="verb_first_no_practice",
+                                                           `video_first_1`="video_first_with_practice",
+                                                           `video_first_2`="video_first_no_practice"))
 
 clean_test_df <- filter(clean_test_df, Parameter == "_Trial_" | Parameter == "Choice")
 clean_test_df <- filter(clean_test_df, Value != "End")
@@ -270,7 +270,7 @@ test_df_by_random_order <- group_by(clean_test_df_full, random_order) %>%
     mean = mean(score, na.rm = TRUE),
     sd = sd(score, na.rm = TRUE),
   )
- # count divide by 10 to get number of participants in a list/random order
+# count divide by 10 to get number of participants in a list/random order
 sum(test_df_by_random_order$number_of_participants) #99
 write.csv(test_df_by_random_order,"./Output/summary-stats/test_df_by_random_order.csv")
 
@@ -322,7 +322,7 @@ test_df_by_random_order_and_subjects <- clean_test_df_full %>%
   group_by(random_order,PROLIFIC_PID) %>%
   summarise(Mean = mean(score),
             SD = sd(score),
-            )
+  )
 test_df_by_random_order_and_subjects
 write.csv(test_df_by_random_order_and_subjects,"./Output/summary-stats/test_df_by_random_order_and_subjects.csv")
 
@@ -331,7 +331,7 @@ test_df_by_group_and_subjects <- clean_test_df_full %>%
   group_by(group,PROLIFIC_PID) %>%
   summarise(Mean = mean(score),
             SD=sd(score)
-            )
+  )
 test_df_by_group_and_subjects
 write.csv(test_df_by_group_and_subjects,"./Output/summary-stats/test_df_by_group_and_subjects.csv")
 
@@ -340,7 +340,7 @@ test_df_by_video_and_predicate_pair <- clean_test_df_full %>%
   group_by(video_name,predicate_pair) %>%
   summarise(Mean = mean(score),
             SD=sd(score)
-            )
+  )
 test_df_by_video_and_predicate_pair
 write.csv(test_df_by_video_and_predicate_pair,"./Output/summary-stats/test_df_by_video_and_predicate_pair.csv")
 
@@ -403,16 +403,42 @@ pred_pairs_and_conditions_graph <- clean_test_df_full %>%
   theme_bw() +
   scale_fill_manual("conditions", values = c("verb_first_with_practice" = "coral1", "verb_first_no_practice" = "coral4", "video_first_with_practice" = "paleturquoise2", "video_first_no_practice" = "paleturquoise3" )) +
   labs(
-  x = "Predicate pairs",
-  y = "Average score",
-  title = paste(
-    "Mean score for each predicate pair and condition"
+    x = "Predicate pairs",
+    y = "Average score",
+    title = paste(
+      "Mean score for each predicate pair and condition"
+    )
   )
-)
 pred_pairs_and_conditions_graph
 ggsave("./Output/graphs/pred_pairs_and_conditions_graph.png")
 
+#--
+pred_pairs_and_conditions_graph <- clean_test_df_full %>%
+  group_by(condition) %>%
+  summarise(Mean = mean(score)) %>%
+  ggplot(aes(x = condition, y = Mean)) +
+  geom_bar(stat = "identity", position = "dodge") + ylim(0,1) +
+  theme_bw() +
+  scale_fill_manual("conditions", values = c("verb_first_with_practice" = "coral1", "verb_first_no_practice" = "coral4", "video_first_with_practice" = "paleturquoise2", "video_first_no_practice" = "paleturquoise3" )) +
+  labs(
+    x = "Predicate pairs",
+    y = "Average score",
+    title = paste(
+      "Mean score for each condition"
+    )
+  )
+pred_pairs_and_conditions_graph
+ggsave("./Output/graphs/conditions_graph.png")
 
+# -- 
+install.packages("sjPlot")
+library(sjPlot)
+tab_itemscale(collapsed_test$predicate_pair)
+
+library(ShinyItemAnalysis)
+startShinyItemAnalysis()
+
+#--
 collapsed_test <- clean_test_df_full
 
 #collapsing verb and video conditions
@@ -433,12 +459,12 @@ collapsed_predicate_pairs <- collapsed_test %>%
   theme_bw() +
   scale_fill_manual("conditions", values = c("verb_first" = "coral1", "video_first" = "paleturquoise3" )) +
   labs(
-  x = "Predicate pairs",
-  y = "Average score",
-  title = paste(
-    "Collapsed mean score for each predicate pair"
+    x = "Predicate pairs",
+    y = "Average score",
+    title = paste(
+      "Collapsed mean score for each predicate pair"
+    )
   )
-)
 collapsed_predicate_pairs
 ggsave("./Output/graphs/collapsed_predicate_pairs.png")
 
@@ -518,7 +544,7 @@ t.test(data=subject_score_main_df, subject_means ~ collapsed_conditions)
 collapsed_test <- collapsed_test %>%
   mutate(
     subject_means = summed_score/10
-    )
+  )
 
 collapsed_test <- collapsed_test %>%
   mutate(
@@ -646,3 +672,116 @@ grouping_collapsed_random_order_and_predicate_pair_df %>%
 
 #adding number of subjects in those conditions
 # collapsed_test %>% group_by(predicate_pair, collapsed_random_order) %>% summarise(n = n())
+
+getwd()
+
+random_clean_test_df_full <- read.csv("./random_preprocess/random_clean_test_df_full.csv")
+length(random_clean_test_df_full)
+colnames(random_clean_test_df_full)
+length(collapsed_test)
+colnames(collapsed_test)
+
+collapsed_test$collapsed_random_order <- NULL
+
+#adding subject means to random_clean_test_df_full
+random_num_of_trials <- random_clean_test_df_full %>%
+  group_by(PROLIFIC_PID) %>%
+  summarise( number_of_trials = length(trial_number))
+
+random_clean_test_df_full <- random_clean_test_df_full %>%
+  mutate(
+    subject_means = summed_score/10
+  )
+
+length(random_clean_test_df_full)
+colnames(random_clean_test_df_full)
+length(collapsed_test)
+
+#remove collapsed conditions to get the same number of columns as random df
+collapsed_test$collapsed_conditions <- NULL
+
+colnames(random_clean_test_df_full)
+colnames(collapsed_test)
+random_clean_test_df_full$X <- NULL
+random_clean_test_df_full$predicate_order <- NULL
+collapsed_test$random_order <- NULL
+
+colnames(random_clean_test_df_full)
+colnames(collapsed_test)
+
+collapsed_test$source <-NULL
+
+main_df <- rbind(collapsed_test,random_clean_test_df_full)
+
+# random_pair_score <- random_clean_test_df_full %>%
+#   select(predicate_pair,video_type,score) %>%
+#   group_by(predicate_pair,video_type) %>%
+#   mutate(
+#     pair_summed_score = sum(score),
+#     pair_means = mean(score)
+#   )
+
+#mean score for each predicate pair by video condition
+random_pair_score <- random_clean_test_df_full %>%
+  group_by(predicate_pair,video_type) %>%
+  summarise(mean = mean(score))
+
+random_pair_score <- random_pair_score %>% arrange(desc(video_type))
+
+random_pair_score <- random_pair_score %>%
+  mutate(
+    rating_diff = case_when(
+      (predicate_pair == "choose_match") ~ 1.71,
+      (predicate_pair == "push_separate") ~ 1.74,
+      (predicate_pair == "punch_fight") ~ 1.61,
+      (predicate_pair == "hang_connect") ~ 1.63,
+      (predicate_pair == "pull_join") ~ 1.30,
+      (predicate_pair == "tickle_hug") ~ 2.04,
+      (predicate_pair == "invite_marry") ~ 2.12,
+      (predicate_pair == "grab_share") ~ 1.38,
+      (predicate_pair == "lick_kiss") ~ 2.00,
+      (predicate_pair == "teach_meet") ~ 2.12
+    ))
+
+#-- main df pair score --
+
+
+#mean score for each predicate pair by video condition
+main_df_pair_score <- main_df %>%
+  group_by(predicate_pair,video_type) %>%
+  summarise(mean = mean(score))
+
+main_df_pair_score <- main_df_pair_score %>% arrange(desc(video_type))
+
+main_df_pair_score <- main_df_pair_score %>%
+  mutate(
+    rating_diff = case_when(
+      (predicate_pair == "choose_match") ~ 1.71,
+      (predicate_pair == "push_separate") ~ 1.74,
+      (predicate_pair == "punch_fight") ~ 1.61,
+      (predicate_pair == "hang_connect") ~ 1.63,
+      (predicate_pair == "pull_join") ~ 1.30,
+      (predicate_pair == "tickle_hug") ~ 2.04,
+      (predicate_pair == "invite_marry") ~ 2.12,
+      (predicate_pair == "grab_share") ~ 1.38,
+      (predicate_pair == "lick_kiss") ~ 2.00,
+      (predicate_pair == "teach_meet") ~ 2.12
+    ))
+
+# ggplot(random_pair_score, aes(rating_diff, mean, col = video_type)) + 
+#   geom_point(size = 3) + # change size and color
+#   labs(y = "Mean score", x = "Symmetry rating difference") + # rename axes
+#   scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1.00)) + # y axis limits/range 
+#   scale_x_continuous(limits = c(0, 2.5)) + # x axis limits/range 
+#   geom_smooth(method = 'lm', se = F) # fit linear regression line
+
+
+ggplot(main_df_pair_score, aes(rating_diff, mean, col = video_type, label = predicate_pair)) +
+  geom_point() + geom_text(hjust=0, vjust=0) +
+  stat_smooth(method = lm)
+ggsave("./random_preprocess/lin_regression_graph.png")
+
+main_df_pair_score
+
+write.csv(main_df, "./merged_data/full_data/main_df.csv")
+write.csv(main_df_pair_score, "./merged_data/full_data/main_df_pair_score.csv")
